@@ -1,93 +1,99 @@
 <!DOCTYPE html>
-<html lang="ar" dir="rtl">
+<html lang="fr" dir="ltr">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>تذكرة دخول - متحف حرب النجوم</title>
+<title>Billet d'Entrée - Musée Star Wars</title>
 <style>
   /* إعدادات خاصة بمقاس 58mm */
   @page {
     margin: 0;
-    size: 58mm auto; /* العرض 58mm والطول أوتوماتيك */
+    size: 58mm auto; 
   }
 
   body { 
-    font-family: 'Segoe UI', Tahoma, Arial, sans-serif; 
+    font-family: 'Segoe UI', Arial, sans-serif; 
     background: #f4f4f4; 
-    padding: 20px; 
+    padding: 10px; 
     margin: 0;
     display: flex;
     justify-content: center;
   }
 
   .ticket {
-    width: 58mm; /* عرض المطبعة الحرارية */
+    width: 58mm; 
     background: #fff; 
     border: 1px dashed #999;
-    padding: 2mm; 
+    padding: 3mm 2mm; 
     box-sizing: border-box;
-    font-size: 12px;
+    font-size: 14px; /* خط أكبر */
+    color: #000;
   }
 
   .header { 
     text-align: center; 
     border-bottom: 1px dashed #000; 
-    padding-bottom: 2mm; 
-    margin-bottom: 2mm; 
+    padding-bottom: 3mm; 
+    margin-bottom: 3mm; 
   }
-  .header h1 { margin: 0; color: #000; font-size: 14px; }
-  .header h2 { margin: 1mm 0; color: #000; font-size: 11px; font-weight: normal;}
-  .header p { margin: 1mm 0; font-size: 10px; color: #000; }
+  .header h1 { margin: 0 0 2mm 0; color: #000; font-size: 18px; font-weight: bold;}
+  .header h2 { margin: 1mm 0; color: #000; font-size: 14px; font-weight: normal;}
+  .header p { margin: 1mm 0; font-size: 12px; color: #000; font-weight: bold;}
   
   .row { 
     display: flex; 
     justify-content: space-between; 
     align-items: center;
-    margin: 1.5mm 0; 
-    font-size: 11px; 
+    margin: 2.5mm 0; 
+    font-size: 14px; 
+    font-weight: bold;
   }
-  .row label { font-weight: bold; width: 40%; }
+  .row label { width: 45%; }
   .row input[type="text"] { 
-    width: 58%; 
+    width: 50%; 
     border: none; 
-    border-bottom: 1px dotted #000; 
+    border-bottom: 1px solid #000; 
     padding: 1mm; 
-    font-size: 11px; 
-    text-align: right; 
+    font-size: 14px; 
+    text-align: left; 
     background: transparent; 
+    font-weight: bold;
   }
   .row input[type="text"]:focus { outline: none; }
-  .row span.val { font-weight: bold; font-size: 11px; }
+  .row span.val { font-size: 15px; }
 
   table { 
     width: 100%; 
     border-collapse: collapse; 
-    margin: 2mm 0; 
+    margin: 3mm 0; 
   }
   th, td { 
     border: 1px solid #000; 
-    padding: 1mm; 
+    padding: 2mm; 
     text-align: center; 
-    font-size: 11px; 
+    font-size: 13px; 
+    font-weight: bold;
   }
-  th { background: #eee; color: #000; font-weight: bold;}
+  th { background: #eee; color: #000; }
   input[type="number"] { 
     width: 90%; 
     padding: 1mm; 
     text-align: center; 
-    font-size: 11px; 
+    font-size: 14px; 
     border: none; 
     background: transparent;
+    font-weight: bold;
   }
-  .total-cell { font-weight: bold; font-size: 12px; }
+  .total-cell { font-size: 15px; }
 
   .footer { 
-    margin-top: 2mm; 
-    font-size: 9px; 
+    margin-top: 4mm; 
+    font-size: 13px; 
     color: #000; 
     border-top: 1px dashed #000; 
-    padding-top: 2mm; 
+    padding-top: 3mm; 
     text-align: center;
+    font-weight: bold;
   }
   
   .buttons { text-align: center; margin-top: 20px; }
@@ -98,6 +104,7 @@
     border: none; 
     border-radius: 5px; 
     cursor: pointer; 
+    font-weight: bold;
   }
   .btn-print { background: #b00; color: #fff; }
   .btn-new { background: #333; color: #fff; }
@@ -121,33 +128,34 @@
 
 <div class="ticket">
   <div class="header">
-    <h1>تذكرة دخول</h1>
-    <h2>متحف حرب النجوم</h2>
-    <p><strong>نزل سيدي إدريس</strong></p>
+    <h1>BILLET D'ENTRÉE</h1>
+    <h2>Musée Star Wars</h2>
+    <p>Hôtel Sidi Idriss</p>
     <p>📞 75 240 005</p>
+    <p>✉️ sidi.idris.hotel@gmail.com</p>
   </div>
 
   <div class="row">
-    <label>رقم التذكرة:</label>
+    <label>N° Billet :</label>
     <span class="val" id="numTicket">...</span>
   </div>
   
   <div class="row">
-    <label>التاريخ:</label>
+    <label>Date :</label>
     <span class="val" id="dateTicket">...</span>
   </div>
 
   <div class="row">
-    <label>الحريف:</label>
-    <input type="text" id="client" placeholder="الاسم...">
+    <label>Client / Agence :</label>
+    <input type="text" id="client" placeholder="Nom...">
   </div>
 
   <table>
     <thead>
       <tr>
-        <th>زوار</th>
-        <th>سعر</th>
-        <th>المجموع</th>
+        <th>Visiteurs</th>
+        <th>Prix (DT)</th>
+        <th>Total (DT)</th>
       </tr>
     </thead>
     <tbody>
@@ -160,20 +168,17 @@
   </table>
 
   <div class="footer">
-    <p>صالحة في تاريخ الطبع فقط.</p>
-    <p>غير قابلة للاسترجاع.</p>
-    <br>
-    <p>شكراً لزيارتكم!</p>
+    <p style="font-size: 14px; margin: 2mm 0;">Bienvenue !</p>
+    <p style="margin: 1mm 0;">Merci de votre visite.</p>
   </div>
 </div>
 
 <div class="buttons">
-  <button class="btn-print" onclick="window.print()">🖨️ طباعة حرارية</button>
-  <button class="btn-new" onclick="nouvelleTicket()">➕ تذكرة جديدة</button>
+  <button class="btn-print" onclick="window.print()">🖨️ Imprimer</button>
+  <button class="btn-new" onclick="nouvelleTicket()">➕ Nouveau Billet</button>
 </div>
 
 <script>
-  // نفس السكريبت متاع قبل
   function getNumero() {
     let n = localStorage.getItem('numTicket_sidiIdris');
     if (!n) { n = 1; localStorage.setItem('numTicket_sidiIdris', 1); }
