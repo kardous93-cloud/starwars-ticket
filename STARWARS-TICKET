@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>تذكرة دخول - متحف حرب النجوم</title>
+<style>
+  body { 
+    font-family: 'Segoe UI', Tahoma, Arial, sans-serif; 
+    background: #f4f4f4; 
+    padding: 20px; 
+    margin: 0;
+  }
+  .ticket {
+    width: 100%; 
+    max-width: 700px; 
+    margin: auto; 
+    background: #fff; 
+    border: 2px solid #333;
+    border-radius: 10px; 
+    padding: 25px; 
+    box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+    box-sizing: border-box;
+  }
+  .header { 
+    text-align: center; 
+    border-bottom: 2px dashed #999; 
+    padding-bottom: 15px; 
+    margin-bottom: 20px; 
+  }
+  .header h1 { margin: 5px 0; color: #111; font-size: 24px; }
+  .header h2 { margin: 5px 0; color: #b00; font-size: 18px; }
+  .header p { margin: 4px 0; font-size: 14px; color: #555; }
+  
+  .row { 
+    display: flex; 
+    justify-content: space-between; 
+    align-items: center;
+    margin: 12px 0; 
+    font-size: 16px; 
+  }
+  .row label { font-weight: bold; width: 35%; }
+  .row input[type="text"] { 
+    width: 60%; 
+    border: none; 
+    border-bottom: 1px solid #999; 
+    padding: 5px; 
+    font-size: 16px; 
+    text-align: right; 
+    background: transparent; 
+  }
+  .row input[type="text"]:focus { outline: none; border-bottom: 2px solid #b00; }
+  .row span.val { font-weight: bold; font-size: 17px; }
+
+  table { 
+    width: 100%; 
+    border-collapse: collapse; 
+    margin: 20px 0; 
+    background: #fff;
+  }
+  th, td { 
+    border: 1px solid #333; 
+    padding: 12px; 
+    text-align: center; 
+    font-size: 16px; 
+  }
+  th { background: #222; color: #fff; }
+  input[type="number"] { 
+    width: 80%; 
+    padding: 8px; 
+    text-align: center; 
+    font-size: 16px; 
+    border: 1px solid #ccc; 
+    border-radius: 4px; 
+  }
+  .total-cell { font-weight: bold; font-size: 18px; color: #b00; background: #fff8f8; }
+
+  .footer { 
+    margin-top: 20px; 
+    font-size: 13px; 
+    color: #444; 
+    border-top: 1px dashed #999; 
+    padding-top: 15px; 
+  }
+  .footer ul { margin: 5px 0; padding-right: 20px; }
+  
+  .buttons { text-align: center; margin-top: 25px; }
+  button { 
+    padding: 12px 25px; 
+    font-size: 16px; 
+    margin: 5px; 
+    border: none; 
+    border-radius: 5px; 
+    cursor: pointer; 
+    font-weight: bold;
+  }
+  .btn-print { background: #b00; color: #fff; }
+  .btn-new { background: #333; color: #fff; }
+  button:hover { opacity: 0.8; }
+
+  /* إعدادات الطباعة */
+  @media print {
+    body { background: #fff; padding: 0; }
+    .buttons { display: none; }
+    .ticket { box-shadow: none; border: 2px solid #000; max-width: 100%; }
+  }
+</style>
+</head>
+<body>
+
+<div class="ticket">
+  <div class="header">
+    <h1>🎟️ تذكرة دخول — متحف حرب النجوم</h1>
+    <h2>Billet d'Entrée — Musée Star Wars</h2>
+    <p><strong>نزل سيدي إدريس</strong> — سيدي إدريس</p>
+    <p>📞 75 240 005 &nbsp;|&nbsp; ✉️ sidi.idris.hotel@gmail.com</p>
+  </div>
+
+  <div class="row">
+    <label>رقم التذكرة:</label>
+    <span class="val" id="numTicket">جاري التحميل...</span>
+  </div>
+  
+  <div class="row">
+    <label>التاريخ:</label>
+    <span class="val" id="dateTicket">جاري التحميل...</span>
+  </div>
+
+  <div class="row">
+    <label>اسم الحريف / الوكالة:</label>
+    <input type="text" id="client" placeholder="اكتب الاسم هنا...">
+  </div>
+
+  <table>
+    <thead>
+      <tr>
+        <th>عدد الزوار</th>
+        <th>سعر الفرد (د.ت)</th>
+        <th>المجموع (د.ت)</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><input type="number" id="nbVisiteurs" value="1" min="1" oninput="calculerTotal()"></td>
+        <td><input type="number" id="prix" value="0" min="0" step="0.5" oninput="calculerTotal()"></td>
+        <td class="total-cell" id="total">0.000</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <div class="row">
+    <label>طريقة الدفع:</label>
+    <div style="width: 60%; text-align: right; font-size: 15px;">
+      <label><input type="radio" name="paiement" value="نقداً" checked> نقداً</label> &nbsp;
+      <label><input type="radio" name="paiement" value="بطاقة"> بطاقة</label> &nbsp;
+      <label><input type="radio" name="paiement" value="تحويل"> تحويل</label>
+    </div>
+  </div>
+
+  <div class="footer">
+    <strong>شروط الاستعمال:</strong>
+    <ul>
+      <li>التذكرة صالحة فقط في التاريخ المذكور أعلاه.</li>
+      <li>غير قابلة للاسترجاع أو التبديل.</li>
+      <li>يُرجى الاحتفاظ بالتذكرة طيلة الزيارة.</li>
+    </ul>
+    <p style="text-align:left; margin-top:20px;">التوقيع والختم: __________________</p>
+  </div>
+</div>
+
+<div class="buttons">
+  <button class="btn-print" onclick="window.print()">🖨️ طباعة التذكرة</button>
+  <button class="btn-new" onclick="nouvelleTicket()">➕ تذكرة جديدة</button>
+</div>
+
+<script>
+  // --- 1. إدارة رقم التذكرة (محفوظ في المتصفح) ---
+  function getNumero() {
+    let n = localStorage.getItem('numTicket_sidiIdris');
+    if (!n) {
+      n = 1;
+      localStorage.setItem('numTicket_sidiIdris', 1);
+    }
+    return parseInt(n);
+  }
+
+  function afficherNumero() {
+    let n = getNumero();
+    // تنسيق الرقم باش يولي 001, 002...
+    let formatte = String(n).padStart(3, '0');
+    document.getElementById('numTicket').textContent = 'TKT-' + formatte;
+  }
+
+  // --- 2. إدارة التاريخ الأوتوماتيكي ---
+  function afficherDate() {
+    let d = new Date();
+    let jour = String(d.getDate()).padStart(2, '0');
+    let mois = String(d.getMonth() + 1).padStart(2, '0');
+    let annee = d.getFullYear();
+    document.getElementById('dateTicket').textContent = jour + '/' + mois + '/' + annee;
+  }
+
+  // --- 3. حساب المجموع ---
+  function calculerTotal() {
+    let nb = parseFloat(document.getElementById('nbVisiteurs').value) || 0;
+    let prix = parseFloat(document.getElementById('prix').value) || 0;
+    let total = nb * prix;
+    document.getElementById('total').textContent = total.toFixed(3);
+  }
+
+  // --- 4. تذكرة جديدة (تزيد الرقم وتنظف الخانات) ---
+  function nouvelleTicket() {
+    let n = getNumero() + 1;
+    localStorage.setItem('numTicket_sidiIdris', n);
+    
+    afficherNumero();
+    afficherDate();
+    
+    document.getElementById('client').value = '';
+    document.getElementById('nbVisiteurs').value = 1;
+    document.getElementById('prix').value = 0;
+    document.getElementById('total').textContent = '0.000';
+  }
+
+  // --- تشغيل أولي عند فتح الصفحة ---
+  afficherNumero();
+  afficherDate();
+  calculerTotal();
+</script>
+
+</body>
+</html>
