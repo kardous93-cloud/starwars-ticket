@@ -1,222 +1,259 @@
 <!DOCTYPE html>
-<html lang="fr" dir="ltr">
+<html lang="fr">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Billet d'Entrée - Musée Star Wars</title>
-<style>
-  /* إعدادات خاصة بمقاس 58mm */
-  @page {
-    margin: 0;
-    size: 58mm auto; 
-  }
-
-  body { 
-    font-family: 'Segoe UI', Arial, sans-serif; 
-    background: #f4f4f4; 
-    padding: 10px; 
-    margin: 0;
-    display: flex;
-    justify-content: center;
-  }
-
-  .ticket {
-    width: 58mm; 
-    background: #fff; 
-    border: 1px dashed #999;
-    padding: 3mm 2mm; 
-    box-sizing: border-box;
-    font-size: 14px; /* خط أكبر */
-    color: #000;
-  }
-
-  .header { 
-    text-align: center; 
-    border-bottom: 1px dashed #000; 
-    padding-bottom: 3mm; 
-    margin-bottom: 3mm; 
-  }
-  .header h1 { margin: 0 0 2mm 0; color: #000; font-size: 18px; font-weight: bold;}
-  .header h2 { margin: 1mm 0; color: #000; font-size: 14px; font-weight: normal;}
-  .header p { margin: 1mm 0; font-size: 12px; color: #000; font-weight: bold;}
-  
-  .row { 
-    display: flex; 
-    justify-content: space-between; 
-    align-items: center;
-    margin: 2.5mm 0; 
-    font-size: 14px; 
-    font-weight: bold;
-  }
-  .row label { width: 45%; }
-  .row input[type="text"] { 
-    width: 50%; 
-    border: none; 
-    border-bottom: 1px solid #000; 
-    padding: 1mm; 
-    font-size: 14px; 
-    text-align: left; 
-    background: transparent; 
-    font-weight: bold;
-  }
-  .row input[type="text"]:focus { outline: none; }
-  .row span.val { font-size: 15px; }
-
-  table { 
-    width: 100%; 
-    border-collapse: collapse; 
-    margin: 3mm 0; 
-  }
-  th, td { 
-    border: 1px solid #000; 
-    padding: 2mm; 
-    text-align: center; 
-    font-size: 13px; 
-    font-weight: bold;
-  }
-  th { background: #eee; color: #000; }
-  input[type="number"] { 
-    width: 90%; 
-    padding: 1mm; 
-    text-align: center; 
-    font-size: 14px; 
-    border: none; 
-    background: transparent;
-    font-weight: bold;
-  }
-  .total-cell { font-size: 15px; }
-
-  .footer { 
-    margin-top: 4mm; 
-    font-size: 13px; 
-    color: #000; 
-    border-top: 1px dashed #000; 
-    padding-top: 3mm; 
-    text-align: center;
-    font-weight: bold;
-  }
-  
-  .buttons { text-align: center; margin-top: 20px; }
-  button { 
-    padding: 10px 20px; 
-    font-size: 14px; 
-    margin: 5px; 
-    border: none; 
-    border-radius: 5px; 
-    cursor: pointer; 
-    font-weight: bold;
-  }
-  .btn-print { background: #b00; color: #fff; }
-  .btn-new { background: #333; color: #fff; }
-
-  /* إعدادات الطباعة */
-  @media print {
-    body { background: #fff; padding: 0; display: block; }
-    .buttons { display: none; }
-    .ticket { 
-      border: none; 
-      width: 58mm; 
-      padding: 0;
-      margin: 0;
-    }
-    input { border: none !important; }
-    th { background: #fff !important; border: 1px solid #000; }
-  }
-</style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Système de Réservation - Hôtel & Restaurant</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+        body { background-color: #f4f4f4; display: flex; justify-content: center; align-items: flex-start; min-height: 100vh; padding: 20px; }
+        
+        /* --- التصميم العام (الواجهة) --- */
+        .main-container { display: flex; gap: 20px; max-width: 1000px; width: 100%; }
+        
+        /* --- واجهة الإدخال (اليسار) --- */
+        .input-form {
+            background: white; width: 100%; max-width: 500px; border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1); padding: 25px;
+        }
+        .input-form h2 { color: #b57e2f; text-align: center; margin-bottom: 20px; font-size: 22px; }
+        
+        .form-group { margin-bottom: 15px; }
+        .form-group label { display: block; margin-bottom: 5px; font-size: 14px; font-weight: bold; color: #444; }
+        .form-group input, .form-group select {
+            width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 6px; font-size: 15px;
+        }
+        .row { display: flex; gap: 10px; }
+        .row .form-group { flex: 1; }
+        
+        .total-preview { background: #fdfbf7; border: 1px solid #f0e6d2; padding: 15px; border-radius: 6px; text-align: center; margin-top: 15px; }
+        .total-preview span { font-size: 24px; font-weight: bold; color: #b57e2f; }
+        
+        .btn { width: 100%; padding: 12px; border: none; border-radius: 6px; font-size: 16px; font-weight: bold; cursor: pointer; margin-top: 10px; transition: 0.3s; }
+        .btn-print { background: #b57e2f; color: white; }
+        .btn-print:hover { background: #9c6b24; }
+        .btn-reset { background: #e0e0e0; color: #333; margin-bottom: 10px; }
+        .btn-reset:hover { background: #ccc; }
+        
+        /* --- التيكي (اليمين) --- */
+        .ticket-wrapper { display: none; } /* نخفيو في الشاشة، ونظهرو غير في الطباعة */
+        
+        /* --- إعدادات الطباعة (أهم جزء) --- */
+        @media print {
+            body { background: white; display: block; padding: 0; }
+            .input-form { display: none; } /* نخفيو الفورم */
+            .ticket-wrapper { display: block; width: 58mm; margin: 0 auto; } /* حجم الورق الحراري */
+            
+            .ticket {
+                border: 1px dashed #000; padding: 5px; font-family: 'Courier New', Courier, monospace;
+                color: #000; background: #fff;
+            }
+            .ticket-header { text-align: center; margin-bottom: 10px; }
+            .ticket-header h3 { font-size: 14px; margin-bottom: 2px; text-transform: uppercase; }
+            .ticket-header p { font-size: 11px; margin: 1px 0; }
+            
+            .ticket-divider { border-top: 1px dashed #000; margin: 5px 0; }
+            
+            .ticket-row { display: flex; justify-content: space-between; font-size: 12px; margin: 3px 0; }
+            .ticket-row.bold { font-weight: bold; }
+            
+            .ticket-table { width: 100%; border-collapse: collapse; margin: 10px 0; }
+            .ticket-table th, .ticket-table td { border: 1px solid #000; padding: 4px; font-size: 11px; text-align: center; }
+            
+            .ticket-footer { text-align: center; margin-top: 10px; font-size: 11px; }
+        }
+    </style>
 </head>
 <body>
 
-<div class="ticket">
-  <div class="header">
-    <h1>BILLET D'ENTRÉE</h1>
-    <h2>Musée Star Wars</h2>
-    <p>Hôtel Sidi Idriss</p>
-    <p>📞 75 240 005</p>
-    <p>✉️ sidi.idris.hotel@gmail.com</p>
-  </div>
+<div class="main-container">
+    <!-- الفورم اللي يكتب فيه الحريف -->
+    <div class="input-form">
+        <h2>HOTEL SIDI IDRISS</h2>
+        <p style="text-align: center; color: #666; font-size: 13px; margin-bottom: 20px;">Matmata 6070</p>
+        
+        <div class="form-group">
+            <label>Type de Service</label>
+            <select id="typeService" onchange="toggleService()">
+                <option value="hotel">🏨 Hébergement (Mabiit)</option>
+                <option value="restaurant">🍽️ Restaurant (Manger)</option>
+            </select>
+        </div>
 
-  <div class="row">
-    <label>N° Billet :</label>
-    <span class="val" id="numTicket">...</span>
-  </div>
-  
-  <div class="row">
-    <label>Date :</label>
-    <span class="val" id="dateTicket">...</span>
-  </div>
+        <div class="form-group">
+            <label>Nom Client / Agence</label>
+            <input type="text" id="nomClient" placeholder="Nom de l'agence">
+        </div>
 
-  <div class="row">
-    <label>Client / Agence :</label>
-    <input type="text" id="client" placeholder="Nom...">
-  </div>
+        <!-- الحقول الخاصة بالنزل -->
+        <div id="hotelFields">
+            <div class="row">
+                <div class="form-group">
+                    <label>Nb Chambres</label>
+                    <input type="number" id="nbChambres" value="1" min="1" oninput="calculer()">
+                </div>
+                <div class="form-group">
+                    <label>Nb Nuits</label>
+                    <input type="number" id="nbNuits" value="1" min="1" oninput="calculer()">
+                </div>
+            </div>
+            <div class="form-group">
+                <label>Nb Personnes</label>
+                <input type="number" id="nbPersonnes" value="1" min="1" oninput="calculer()">
+            </div>
+        </div>
 
-  <table>
-    <thead>
-      <tr>
-        <th>Visiteurs</th>
-        <th>Prix (DT)</th>
-        <th>Total (DT)</th>
-      </tr>
-    </thead>
-    <tbody>
-      <tr>
-        <td><input type="number" id="nbVisiteurs" value="1" min="1" oninput="calculerTotal()"></td>
-        <td><input type="number" id="prix" value="0" min="0" step="0.5" oninput="calculerTotal()"></td>
-        <td class="total-cell" id="total">0.000</td>
-      </tr>
-    </tbody>
-  </table>
+        <!-- الحقول الخاصة بالمطعم -->
+        <div id="restaurantFields" style="display: none;">
+            <div class="form-group">
+                <label>Nb Repas</label>
+                <input type="number" id="nbRepas" value="1" min="1" oninput="calculer()">
+            </div>
+        </div>
 
-  <div class="footer">
-    <p style="font-size: 14px; margin: 2mm 0;">Bienvenue !</p>
-    <p style="margin: 1mm 0;">Merci de votre visite.</p>
-  </div>
-</div>
+        <div class="row">
+            <div class="form-group">
+                <label>Prix Unitaire (DT)</label>
+                <input type="number" id="prixUnitaire" value="0" min="0" oninput="calculer()">
+            </div>
+            <div class="form-group">
+                <label>Total (DT)</label>
+                <input type="text" id="totalAffichage" value="0.000" readonly style="background: #f9f9f9; font-weight: bold; color: #b57e2f;">
+            </div>
+        </div>
 
-<div class="buttons">
-  <button class="btn-print" onclick="window.print()">🖨️ Imprimer</button>
-  <button class="btn-new" onclick="nouvelleTicket()">➕ Nouveau Billet</button>
+        <button class="btn btn-reset" onclick="resetForm()">🔄 Nouveau Ticket</button>
+        <button class="btn btn-print" onclick="window.print()">🖨️ Imprimer le Ticket</button>
+    </div>
+
+    <!-- التيكي اللي يطبع -->
+    <div class="ticket-wrapper">
+        <div class="ticket" id="ticketToPrint">
+            <div class="ticket-header">
+                <h3>BILLET D'ENTRÉE</h3>
+                <p>Hôtel Sidi Idriss</p>
+                <p>Matmata 6070</p>
+                <p>📞 75 240 005</p>
+                <p>✉️ sidi.idriss.hotel@gmail.com</p>
+            </div>
+            
+            <div class="ticket-divider"></div>
+            
+            <div class="ticket-row"><span>N° Billet :</span> <span id="ticketNum">TKT-001</span></div>
+            <div class="ticket-row"><span>Date :</span> <span id="ticketDate"></span></div>
+            <div class="ticket-row"><span>Client / Agence :</span> <span id="ticketClient">Nom...</span></div>
+            
+            <div class="ticket-divider"></div>
+            
+            <table class="ticket-table">
+                <thead>
+                    <tr>
+                        <th id="thDesc">Description</th>
+                        <th>Prix (DT)</th>
+                        <th>Total (DT)</th>
+                    </tr>
+                </thead>
+                <tbody id="ticketTableBody">
+                    <!-- يتعمر بالجافاسكريبت -->
+                </tbody>
+            </table>
+            
+            <div class="ticket-divider"></div>
+            
+            <div class="ticket-footer">
+                <p style="font-weight: bold;">Bienvenue !</p>
+                <p>Merci de votre visite.</p>
+            </div>
+        </div>
+    </div>
 </div>
 
 <script>
-  function getNumero() {
-    let n = localStorage.getItem('numTicket_sidiIdris');
-    if (!n) { n = 1; localStorage.setItem('numTicket_sidiIdris', 1); }
-    return parseInt(n);
-  }
+    // دالة تبديل الحقول بين النزل والمطعم
+    function toggleService() {
+        const service = document.getElementById('typeService').value;
+        if (service === 'hotel') {
+            document.getElementById('hotelFields').style.display = 'block';
+            document.getElementById('restaurantFields').style.display = 'none';
+        } else {
+            document.getElementById('hotelFields').style.display = 'none';
+            document.getElementById('restaurantFields').style.display = 'block';
+        }
+        calculer();
+    }
 
-  function afficherNumero() {
-    let n = getNumero();
-    document.getElementById('numTicket').textContent = 'TKT-' + String(n).padStart(3, '0');
-  }
+    // دالة حساب المجموع
+    function calculer() {
+        const service = document.getElementById('typeService').value;
+        const prix = parseFloat(document.getElementById('prixUnitaire').value) || 0;
+        let total = 0;
+        let tableHTML = '';
 
-  function afficherDate() {
-    let d = new Date();
-    let jour = String(d.getDate()).padStart(2, '0');
-    let mois = String(d.getMonth() + 1).padStart(2, '0');
-    let annee = d.getFullYear();
-    document.getElementById('dateTicket').textContent = jour + '/' + mois + '/' + annee;
-  }
+        const nom = document.getElementById('nomClient').value || "Non spécifié";
+        document.getElementById('ticketClient').textContent = nom;
 
-  function calculerTotal() {
-    let nb = parseFloat(document.getElementById('nbVisiteurs').value) || 0;
-    let prix = parseFloat(document.getElementById('prix').value) || 0;
-    document.getElementById('total').textContent = (nb * prix).toFixed(3);
-  }
+        // التاريخ
+        const now = new Date();
+        document.getElementById('ticketDate').textContent = now.toLocaleDateString('fr-FR') + ' ' + now.toLocaleTimeString('fr-FR', {hour: '2-digit', minute:'2-digit'});
 
-  function nouvelleTicket() {
-    let n = getNumero() + 1;
-    localStorage.setItem('numTicket_sidiIdris', n);
-    afficherNumero();
-    afficherDate();
-    document.getElementById('client').value = '';
-    document.getElementById('nbVisiteurs').value = 1;
-    document.getElementById('prix').value = 0;
-    document.getElementById('total').textContent = '0.000';
-  }
+        if (service === 'hotel') {
+            const chambres = parseInt(document.getElementById('nbChambres').value) || 0;
+            const nuits = parseInt(document.getElementById('nbNuits').value) || 0;
+            const personnes = parseInt(document.getElementById('nbPersonnes').value) || 0;
+            
+            // مثال: الثمن * عدد الليالي * عدد الغرف (تقدر تبدل هالمعادلة)
+            total = prix * nuits * chambres;
+            
+            document.getElementById('thDesc').textContent = "Chambres";
+            tableHTML = `
+                <tr>
+                    <td>${chambres} Ch. x ${nuits} Nuits</td>
+                    <td>${prix.toFixed(3)}</td>
+                    <td>${total.toFixed(3)}</td>
+                </tr>
+                <tr>
+                    <td colspan="2">Personnes: ${personnes}</td>
+                    <td></td>
+                </tr>
+            `;
+        } else {
+            const repas = parseInt(document.getElementById('nbRepas').value) || 0;
+            total = prix * repas;
+            
+            document.getElementById('thDesc').textContent = "Repas";
+            tableHTML = `
+                <tr>
+                    <td>${repas} Repas</td>
+                    <td>${prix.toFixed(3)}</td>
+                    <td>${total.toFixed(3)}</td>
+                </tr>
+            `;
+        }
 
-  afficherNumero();
-  afficherDate();
+        document.getElementById('totalAffichage').value = total.toFixed(3);
+        document.getElementById('ticketTableBody').innerHTML = tableHTML;
+    }
+
+    // دالة تصفير الفورم
+    function resetForm() {
+        document.getElementById('nomClient').value = '';
+        document.getElementById('prixUnitaire').value = '0';
+        document.getElementById('nbChambres').value = '1';
+        document.getElementById('nbNuits').value = '1';
+        document.getElementById('nbPersonnes').value = '1';
+        document.getElementById('nbRepas').value = '1';
+        
+        // توليد رقم تيكي عشوائي
+        const randomNum = Math.floor(100 + Math.random() * 900);
+        document.getElementById('ticketNum').textContent = `TKT-${randomNum}`;
+        
+        calculer();
+    }
+
+    // تشغيل الدوال عند فتح الصفحة
+    window.onload = function() {
+        resetForm();
+    };
 </script>
 
 </body>
