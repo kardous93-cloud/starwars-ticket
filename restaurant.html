@@ -13,7 +13,6 @@
             box-shadow: 0 4px 15px rgba(0,0,0,0.1); padding: 25px;
         }
         
-        /* ستايل زر الرجوع للقائمة */
         .btn-back {
             display: block;
             background: #7f8c8d;
@@ -71,7 +70,6 @@
 <body>
 
 <div class="input-form">
-    <!-- زر الرجوع للصفحة الرئيسية -->
     <a href="index.html" class="btn-back">⬅ Retour au Menu Principal</a>
 
     <h2>HOTEL SIDI IDRISS</h2>
@@ -109,9 +107,9 @@
 <div class="ticket-wrapper">
     <div class="ticket">
         <div class="ticket-header">
-            <h3>BILLET D'ENTRÉE</h3>
-            <p><b>Restaurant</b></p>
-            <p>Hôtel Sidi Idriss</p>
+            <!-- 1. تبديل الاسم لـ TICKET RESTAURANT -->
+            <h3>TICKET RESTAURANT</h3>
+            <p><b>Hôtel Sidi Idriss</b></p>
             <p>Matmata 6070</p>
             <p>📞 75 240 005</p>
             <p>✉️ sidi.idriss.hotel@gmail.com</p>
@@ -119,7 +117,8 @@
         
         <div class="ticket-divider"></div>
         
-        <div class="ticket-row"><span>N° Billet :</span> <span id="ticketNum">TKT-001</span></div>
+        <!-- 3. رقم التيكي هنا -->
+        <div class="ticket-row"><span>N° Ticket :</span> <span id="ticketNum">TKT-001</span></div>
         <div class="ticket-row"><span>Date :</span> <span id="ticketDate"></span></div>
         <div class="ticket-row"><span>Client / Agence :</span> <span id="ticketClient">Nom...</span></div>
         
@@ -137,9 +136,12 @@
             <tbody id="ticketTableBody"></tbody>
         </table>
         
-        <div class="ticket-row" style="margin-top: 5px; font-weight: bold;">
-            <span>Total Repas / Couverts :</span>
-            <span id="totalRepas">0</span>
+        <div class="ticket-divider"></div>
+        
+        <!-- 2. المجموع الكلي للفلوس (كبار + صغار) -->
+        <div class="ticket-row" style="margin-top: 5px; font-size: 14px; font-weight: bold;">
+            <span>Total Prix :</span>
+            <span id="totalPrixFinal">0.000</span> DT
         </div>
         
         <div class="ticket-divider"></div>
@@ -161,7 +163,10 @@
         const totalEnfants = enfants * (prix * 0.5); 
         const total = totalAdultes + totalEnfants;
 
+        // تحديث الواجهة
         document.getElementById('totalAffichage').textContent = total.toFixed(3);
+        
+        // تحديث التيكي
         document.getElementById('ticketClient').textContent = document.getElementById('nomClient').value || "Nom...";
         
         const now = new Date();
@@ -188,7 +193,9 @@
         }
         
         document.getElementById('ticketTableBody').innerHTML = tableHTML;
-        document.getElementById('totalRepas').textContent = adultes + enfants;
+        
+        // تحديث المجموع الكلي في التيكي
+        document.getElementById('totalPrixFinal').textContent = total.toFixed(3);
     }
 
     function resetForm() {
