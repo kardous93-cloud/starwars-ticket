@@ -1,0 +1,181 @@
+import tkinter as tk
+from tkinter import ttk, messagebox
+from datetime import datetime
+import os
+
+# ===== إعدادات الطابعة الحرارية =====
+PRINTER_NAME = "POS-58"   # بدلها باسم طابعتك (شوفها في Devices and Printers)
+
+# ===== إعدادات التسعيرة =====
+PRIX_ADULTE = 10   # دينار
+PRIX_ENFANT = 5
+PRIX_GROUPE = 8    # سعر خاص للوكالات/المجموعات
+
+def imprimer_ticket(num_ticket, nom, adultes, enfants, total):
+    """يطبع ticket على الطابعة الحرارية"""
+    try:
+        import win32print
+        now = datetime.now().strftime("%d/%m/%Y %H:%M")
+        
+        # بناء محتوى التيكي (ESC/POS)
+        contenu = "\x1b\x40"  # init printer
+        contenu += "\x1b\x61\x01"  # center
+        contenu += "\x1b\x21\x30"  # double size
+        contenu += "MUSEE\n"
+        contenu += "\x1b\x21\x00"  # normal size
+        contenu += "--------------------------------\n"
+        contenu += f"Ticket N: {num_ticket}\n"
+        contenu += f"Date: {now}\n"
+        contenu += "--------------------------------\n"
+        contenu += "\x1b\x61\x00"  # left align
+        contenu += f"Client: {nom}\n"
+        contenu += f"Adultes: {adultes} x {PRIX_ADULTE} DT\n"
+        contenu += f"Enfants: {enfants} x {PRIX_ENFANT} DT\n"
+        contenu += "--------------------------------\n"
+        contenu += "\x1b\x61\x01"
+        contenu += "\x1b\x21\x10"  # double height
+        contenu += f"TOTAL: {total} DT\n"
+        contenu += "\x1b\x21\x00"
+        contenu += "--------------------------------\n"
+        contenu += "Merci de votre visite!\n\n\n"
+        contenu += "\x1d\x56\x00"  # cut paper
+        
+        # إرسال للطابعة
+        printer = win32print.OpenPrinter(PRINTER_NAME)
+        try:
+            job = win32print.StartDocPrinter(printer, 1, ("Ticket Musee", None, "RAW"))
+            win32print.StartPagePrinter(printer)
+            win32print.WritePrinter(printer, contenu.encode("cp437"))
+            win32print.EndPagePrinter(printer)
+            win32print.EndDocPrinter(printer)
+        finally:
+            win32print.ClosePrinter(printer)
+        return True
+    except Exception as e:
+        messagebox.showerror("Erreur impression", f"ما نجحتش الطباعة:\n{e}\n\nتأكد من اسم الطابعة.")
+        return False
+
+
+class AppMusee:
+    def __init__(self, root):
+        self.root = root
+        self.root.title("تسكير دخول المتحف")
+        self.root.geometry("500x600")
+        self.root.configure(bg="#f0f0f0")
+        
+        self.num_ticket = self.charger_compteur()
+        
+        # ===== الإطار الرئيسي =====
+        frame = tk.Frame(root, bg="#f0f0f0", padx=20, pady=20)
+        frame.pack(fill="both", expand=True)
+        
+        tk.Label(frame, text="🎟️ Ticket Musée", font=("Arial", 20, "bold"),
+                 bg="#f0f0f0").pack(pady=10)
+        
+        # اسم الحريف / الوكالة
+        tk.Label(frame, text="Nom client / Agence:", bg="#f0f0f0",
+                 font=("Arial", 11)).pack(anchor="w")
+        self.entry_nom = tk.Entry(frame, font=("Arial", 12))
+        self.entry_nom.pack(fill="x", pady=5)
+        
+        # عدد الكبار
+        tk.Label(frame, text="Nombre d'adultes:", bg="#f0f0f0",
+                 font=("Arial", 11)).pack(anchor="w", pady=(10,0))
+        self.spin_adultes = tk.Spinbox(frame, from_=0, to=100, font=("Arial", 12),
+                                       command=self.calculer)
+        self.spin_adultes.pack(fill="x", pady=5)
+        self.spin_adultes.bind("<KeyRelease>", lambda e: self.calculer())
+        
+        # عدد الأطفال
+        tk.Label(frame, text="Nombre d'enfants:", bg="#f0f0f0",
+                 font=("Arial", 11)).pack(anchor="w", pady=(10,0))
+        self.spin_enfants = tk.Spinbox(frame, from_=0, to=100, font=("Arial", 12),
+                                       command=self.calculer)
+        self.spin_enfants.pack(fill="x", pady=5)
+        self.spin_enfants.bind("<KeyRelease>", lambda e: self.calculer())
+        
+        # المجموع
+        self.lbl_total = tk.Label(frame, text="TOTAL: 0 DT",
+                                  font=("Arial", 18, "bold"),
+                                  fg="#c0392b", bg="#f0f0f0")
+        self.lbl_total.pack(pady=20)
+        
+        # الأزرار
+        btn_frame = tk.Frame(frame, bg="#f0f0f0")
+        btn_frame.pack(fill="x", pady=10)
+        
+        tk.Button(btn_frame, text="🖨️ Imprimer Ticket", bg="#27ae60", fg="white",
+                  font=("Arial", 12, "bold"), height=2,
+                  command=self.imprimer).pack(fill="x", pady=5)
+        
+        tk.Button(btn_frame, text="🔄 Nouveau Ticket", bg="#2980b9", fg="white",
+                  font=("Arial", 12), height=2,
+                  command=self.reset).pack(fill="x", pady=5)
+        
+        # معلومات
+        self.lbl_info = tk.Label(frame, text=f"Ticket N°: {self.num_ticket}",
+                                 bg="#f0f0f0", font=("Arial", 10), fg="#555")
+        self.lbl_info.pack(pady=5)
+    
+    def charger_compteur(self):
+        if os.path.exists("compteur.txt"):
+            with open("compteur.txt", "r") as f:
+                return int(f.read().strip() or 1)
+        return 1
+    
+    def sauver_compteur(self):
+        with open("compteur.txt", "w") as f:
+            f.write(str(self.num_ticket))
+    
+    def calculer(self):
+        try:
+            a = int(self.spin_adultes.get() or 0)
+            e = int(self.spin_enfants.get() or 0)
+            total = a * PRIX_ADULTE + e * PRIX_ENFANT
+            self.lbl_total.config(text=f"TOTAL: {total} DT")
+        except ValueError:
+            pass
+    
+    def imprimer(self):
+        nom = self.entry_nom.get().strip()
+        try:
+            a = int(self.spin_adultes.get() or 0)
+            e = int(self.spin_enfants.get() or 0)
+        except ValueError:
+            messagebox.showwarning("خطأ", "أدخل أرقام صحيحة")
+            return
+        
+        if not nom:
+            messagebox.showwarning("خطأ", "أدخل اسم الحريف أو الوكالة")
+            return
+        if a + e == 0:
+            messagebox.showwarning("خطأ", "أدخل على الأقل زائر واحد")
+            return
+        
+        total = a * PRIX_ADULTE + e * PRIX_ENFANT
+        
+        if imprimer_ticket(self.num_ticket, nom, a, e, total):
+            # تسجيل في ملف CSV
+            with open("ventes.csv", "a", encoding="utf-8") as f:
+                f.write(f"{self.num_ticket},{datetime.now()},{nom},{a},{e},{total}\n")
+            
+            messagebox.showinfo("✅", f"تمت الطباعة!\nTicket N° {self.num_ticket}")
+            self.num_ticket += 1
+            self.sauver_compteur()
+            self.lbl_info.config(text=f"Ticket N°: {self.num_ticket}")
+            self.reset()
+    
+    def reset(self):
+        self.entry_nom.delete(0, tk.END)
+        self.spin_adultes.delete(0, tk.END)
+        self.spin_adultes.insert(0, "0")
+        self.spin_enfants.delete(0, tk.END)
+        self.spin_enfants.insert(0, "0")
+        self.lbl_total.config(text="TOTAL: 0 DT")
+        self.entry_nom.focus()
+
+
+if __name__ == "__main__":
+    root = tk.Tk()
+    app = AppMusee(root)
+    root.mainloop()
