@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Restaurant - Hôtel Sidi Idriss</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+        body { background-color: #f4f4f4; display: flex; justify-content: center; align-items: flex-start; min-height: 100vh; padding: 20px; }
+        
+        /* --- واجهة الإدخال --- */
+        .input-form {
+            background: white; width: 100%; max-width: 450px; border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1); padding: 25px;
+        }
+        .input-form h2 { color: #b57e2f; text-align: center; margin-bottom: 5px; font-size: 22px; }
+        .input-form p { text-align: center; color: #666; font-size: 13px; margin-bottom: 20px; }
+        
+        .form-group { margin-bottom: 15px; }
+        .form-group label { display: block; margin-bottom: 5px; font-size: 14px; font-weight: bold; color: #444; }
+        .form-group input {
+            width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 6px; font-size: 15px;
+        }
+        .row { display: flex; gap: 10px; }
+        .row .form-group { flex: 1; }
+        
+        .total-preview { background: #fdfbf7; border: 1px solid #f0e6d2; padding: 15px; border-radius: 6px; text-align: center; margin-top: 15px; }
+        .total-preview span { font-size: 24px; font-weight: bold; color: #b57e2f; }
+        
+        .btn { width: 100%; padding: 12px; border: none; border-radius: 6px; font-size: 16px; font-weight: bold; cursor: pointer; margin-top: 10px; transition: 0.3s; }
+        .btn-print { background: #b57e2f; color: white; }
+        .btn-print:hover { background: #9c6b24; }
+        .btn-reset { background: #e0e0e0; color: #333; margin-bottom: 10px; }
+        .btn-reset:hover { background: #ccc; }
+        
+        /* --- إخفاء التيكي في الشاشة --- */
+        .ticket-wrapper { display: none; }
+        
+        /* --- إعدادات الطباعة (تخرج كيما المتحف بالضبط) --- */
+        @media print {
+            body { background: white; display: block; padding: 0; }
+            .input-form { display: none; } 
+            .ticket-wrapper { display: block; width: 58mm; margin: 0 auto; } 
+            
+            .ticket {
+                border: 1px dashed #000; padding: 10px; font-family: 'Courier New', Courier, monospace;
+                color: #000; background: #fff;
+            }
+            .ticket-header { text-align: center; margin-bottom: 10px; }
+            .ticket-header h3 { font-size: 16px; margin-bottom: 2px; text-transform: uppercase; }
+            .ticket-header p { font-size: 11px; margin: 1px 0; }
+            
+            .ticket-divider { border-top: 1px dashed #000; margin: 8px 0; }
+            
+            .ticket-row { display: flex; justify-content: space-between; font-size: 12px; margin: 4px 0; }
+            .ticket-row.bold { font-weight: bold; }
+            
+            .ticket-table { width: 100%; border-collapse: collapse; margin: 10px 0; }
+            .ticket-table th, .ticket-table td { border: 1px solid #000; padding: 5px; font-size: 11px; text-align: center; }
+            .ticket-table th { background-color: #f0f0f0; }
+            
+            .ticket-footer { text-align: center; margin-top: 15px; font-size: 11px; }
+        }
+    </style>
+</head>
+<body>
+
+<!-- واجهة الإدخال -->
+<div class="input-form">
+    <h2>HOTEL SIDI IDRISS</h2>
+    <p>Restaurant - Matmata 6070</p>
+    
+    <div class="form-group">
+        <label>Nom Client / Agence</label>
+        <input type="text" id="nomClient" placeholder="Nom de l'agence">
+    </div>
+
+    <div class="row">
+        <div class="form-group">
+            <label>Nb Adultes</label>
+            <input type="number" id="nbAdultes" value="1" min="0" oninput="calculer()">
+        </div>
+        <div class="form-group">
+            <label>Nb Enfants (50%)</label>
+            <input type="number" id="nbEnfants" value="0" min="0" oninput="calculer()">
+        </div>
+    </div>
+
+    <div class="form-group">
+        <label>Prix Unitaire (DT)</label>
+        <input type="number" id="prixUnitaire" value="0" min="0" oninput="calculer()">
+    </div>
+
+    <div class="total-preview">
+        Total à payer : <span id="totalAffichage">0.000</span> DT
+    </div>
+
+    <button class="btn btn-reset" onclick="resetForm()">🔄 Nouveau Ticket</button>
+    <button class="btn btn-print" onclick="window.print()">🖨️ Imprimer le Ticket</button>
+</div>
+
+<!-- التيكي اللي يطبع -->
+<div class="ticket-wrapper">
+    <div class="ticket" id="ticketToPrint">
+        <div class="ticket-header">
+            <!-- المعلومات كيما المتحف بالضبط -->
+            <h3>BILLET D'ENTRÉE</h3>
+            <p><b>Hôtel Sidi Idriss</b></p>
+            <p>Matmata 6070</p>
+            <p>📞 75 240 005</p>
+            <p>✉️ sidi.idriss.hotel@gmail.com</p>
+        </div>
+        
+        <div class="ticket-divider"></div>
+        
+        <div class="ticket-row"><span>N° Billet :</span> <span id="ticketNum">TKT-001</span></div>
+        <div class="ticket-row"><span>Date :</span> <span id="ticketDate"></span></div>
+        <div class="ticket-row"><span>Client / Agence :</span> <span id="ticketClient">Nom...</span></div>
+        
+        <div class="ticket-divider"></div>
+        
+        <table class="ticket-table">
+            <thead>
+                <tr>
+                    <th>Désignation</th>
+                    <th>Prix (DT)</th>
+                    <th>Total (DT)</th>
+                </tr>
+            </thead>
+            <tbody id="ticketTableBody">
+                <!-- يتعمر أوتوماتيك -->
+            </tbody>
+        </table>
+        
+        <div class="ticket-divider"></div>
+        
+        <div class="ticket-footer">
+            <p style="font-weight: bold;">Bienvenue !</p>
+            <p>Merci de votre visite.</p>
+        </div>
+    </div>
+</div>
+
+<script>
+    // دالة حساب المجموع
+    function calculer() {
+        const prix = parseFloat(document.getElementById('prixUnitaire').value) || 0;
+        const adultes = parseInt(document.getElementById('nbAdultes').value) || 0;
+        const enfants = parseInt(document.getElementById('nbEnfants').value) || 0;
+
+        // الأطفال 50%
+        const totalAdultes = adultes * prix;
+        const totalEnfants = enfants * (prix * 0.5); 
+        const total = totalAdultes + totalEnfants;
+
+        document.getElementById('totalAffichage').textContent = total.toFixed(3);
+
+        const nom = document.getElementById('nomClient').value || "Nom...";
+        document.getElementById('ticketClient').textContent = nom;
+        
+        // التاريخ
+        const now = new Date();
+        document.getElementById('ticketDate').textContent = now.toLocaleDateString('fr-FR');
+
+        let tableHTML = '';
+        if (adultes > 0) {
+            tableHTML += `
+                <tr>
+                    <td>Adultes</td>
+                    <td>${prix.toFixed(3)}</td>
+                    <td>${totalAdultes.toFixed(3)}</td>
+                </tr>`;
+        }
+        if (enfants > 0) {
+            tableHTML += `
+                <tr>
+                    <td>Enfants (50%)</td>
+                    <td>${(prix * 0.5).toFixed(3)}</td>
+                    <td>${totalEnfants.toFixed(3)}</td>
+                </tr>`;
+        }
+        
+        // باش يبان عدد الزوار كيما المتحف
+        tableHTML += `
+            <tr>
+                <td colspan="2">Total Visiteurs</td>
+                <td><b>${adultes + enfants}</b></td>
+            </tr>`;
+
+        document.getElementById('ticketTableBody').innerHTML = tableHTML;
+    }
+
+    function resetForm() {
+        document.getElementById('nomClient').value = '';
+        document.getElementById('prixUnitaire').value = '0';
+        document.getElementById('nbAdultes').value = '1';
+        document.getElementById('nbEnfants').value = '0';
+        
+        const randomNum = Math.floor(100 + Math.random() * 900);
+        document.getElementById('ticketNum').textContent = `TKT-${randomNum}`;
+        
+        calculer();
+    }
+
+    window.onload = function() {
+        resetForm();
+    };
+</script>
+
+</body>
+</html>
