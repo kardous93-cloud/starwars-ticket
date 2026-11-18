@@ -1,181 +1,164 @@
-import tkinter as tk
-from tkinter import ttk, messagebox
-from datetime import datetime
-import os
-
-# ===== إعدادات الطابعة الحرارية =====
-PRINTER_NAME = "POS-58"   # بدلها باسم طابعتك (شوفها في Devices and Printers)
-
-# ===== إعدادات التسعيرة =====
-PRIX_ADULTE = 10   # دينار
-PRIX_ENFANT = 5
-PRIX_GROUPE = 8    # سعر خاص للوكالات/المجموعات
-
-def imprimer_ticket(num_ticket, nom, adultes, enfants, total):
-    """يطبع ticket على الطابعة الحرارية"""
-    try:
-        import win32print
-        now = datetime.now().strftime("%d/%m/%Y %H:%M")
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Musée - Hôtel Sidi Idriss</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+        body { background-color: #f4f4f4; display: flex; justify-content: center; align-items: flex-start; min-height: 100vh; padding: 20px; }
         
-        # بناء محتوى التيكي (ESC/POS)
-        contenu = "\x1b\x40"  # init printer
-        contenu += "\x1b\x61\x01"  # center
-        contenu += "\x1b\x21\x30"  # double size
-        contenu += "MUSEE\n"
-        contenu += "\x1b\x21\x00"  # normal size
-        contenu += "--------------------------------\n"
-        contenu += f"Ticket N: {num_ticket}\n"
-        contenu += f"Date: {now}\n"
-        contenu += "--------------------------------\n"
-        contenu += "\x1b\x61\x00"  # left align
-        contenu += f"Client: {nom}\n"
-        contenu += f"Adultes: {adultes} x {PRIX_ADULTE} DT\n"
-        contenu += f"Enfants: {enfants} x {PRIX_ENFANT} DT\n"
-        contenu += "--------------------------------\n"
-        contenu += "\x1b\x61\x01"
-        contenu += "\x1b\x21\x10"  # double height
-        contenu += f"TOTAL: {total} DT\n"
-        contenu += "\x1b\x21\x00"
-        contenu += "--------------------------------\n"
-        contenu += "Merci de votre visite!\n\n\n"
-        contenu += "\x1d\x56\x00"  # cut paper
+        .input-form {
+            background: white; width: 100%; max-width: 450px; border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1); padding: 25px;
+        }
+        .input-form h2 { color: #2980b9; text-align: center; margin-bottom: 5px; font-size: 22px; }
+        .input-form p { text-align: center; color: #666; font-size: 13px; margin-bottom: 20px; }
         
-        # إرسال للطابعة
-        printer = win32print.OpenPrinter(PRINTER_NAME)
-        try:
-            job = win32print.StartDocPrinter(printer, 1, ("Ticket Musee", None, "RAW"))
-            win32print.StartPagePrinter(printer)
-            win32print.WritePrinter(printer, contenu.encode("cp437"))
-            win32print.EndPagePrinter(printer)
-            win32print.EndDocPrinter(printer)
-        finally:
-            win32print.ClosePrinter(printer)
-        return True
-    except Exception as e:
-        messagebox.showerror("Erreur impression", f"ما نجحتش الطباعة:\n{e}\n\nتأكد من اسم الطابعة.")
-        return False
-
-
-class AppMusee:
-    def __init__(self, root):
-        self.root = root
-        self.root.title("تسكير دخول المتحف")
-        self.root.geometry("500x600")
-        self.root.configure(bg="#f0f0f0")
+        .form-group { margin-bottom: 15px; }
+        .form-group label { display: block; margin-bottom: 5px; font-size: 14px; font-weight: bold; color: #444; }
+        .form-group input { width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 6px; font-size: 15px; }
         
-        self.num_ticket = self.charger_compteur()
+        .row { display: flex; gap: 10px; }
+        .row .form-group { flex: 1; }
         
-        # ===== الإطار الرئيسي =====
-        frame = tk.Frame(root, bg="#f0f0f0", padx=20, pady=20)
-        frame.pack(fill="both", expand=True)
+        .total-preview { background: #eaf2f8; border: 1px solid #aed6f1; padding: 15px; border-radius: 6px; text-align: center; margin-top: 15px; }
+        .total-preview span { font-size: 24px; font-weight: bold; color: #2980b9; }
         
-        tk.Label(frame, text="🎟️ Ticket Musée", font=("Arial", 20, "bold"),
-                 bg="#f0f0f0").pack(pady=10)
+        .btn { width: 100%; padding: 12px; border: none; border-radius: 6px; font-size: 16px; font-weight: bold; cursor: pointer; margin-top: 10px; transition: 0.3s; }
+        .btn-print { background: #2980b9; color: white; }
+        .btn-print:hover { background: #21618c; }
+        .btn-reset { background: #e0e0e0; color: #333; margin-bottom: 10px; }
+        .btn-reset:hover { background: #ccc; }
+        .btn-back { background: #7f8c8d; color: white; margin-bottom: 10px; text-decoration: none; display: block; text-align: center; padding: 10px; border-radius: 6px;}
         
-        # اسم الحريف / الوكالة
-        tk.Label(frame, text="Nom client / Agence:", bg="#f0f0f0",
-                 font=("Arial", 11)).pack(anchor="w")
-        self.entry_nom = tk.Entry(frame, font=("Arial", 12))
-        self.entry_nom.pack(fill="x", pady=5)
+        .ticket-wrapper { display: none; }
         
-        # عدد الكبار
-        tk.Label(frame, text="Nombre d'adultes:", bg="#f0f0f0",
-                 font=("Arial", 11)).pack(anchor="w", pady=(10,0))
-        self.spin_adultes = tk.Spinbox(frame, from_=0, to=100, font=("Arial", 12),
-                                       command=self.calculer)
-        self.spin_adultes.pack(fill="x", pady=5)
-        self.spin_adultes.bind("<KeyRelease>", lambda e: self.calculer())
-        
-        # عدد الأطفال
-        tk.Label(frame, text="Nombre d'enfants:", bg="#f0f0f0",
-                 font=("Arial", 11)).pack(anchor="w", pady=(10,0))
-        self.spin_enfants = tk.Spinbox(frame, from_=0, to=100, font=("Arial", 12),
-                                       command=self.calculer)
-        self.spin_enfants.pack(fill="x", pady=5)
-        self.spin_enfants.bind("<KeyRelease>", lambda e: self.calculer())
-        
-        # المجموع
-        self.lbl_total = tk.Label(frame, text="TOTAL: 0 DT",
-                                  font=("Arial", 18, "bold"),
-                                  fg="#c0392b", bg="#f0f0f0")
-        self.lbl_total.pack(pady=20)
-        
-        # الأزرار
-        btn_frame = tk.Frame(frame, bg="#f0f0f0")
-        btn_frame.pack(fill="x", pady=10)
-        
-        tk.Button(btn_frame, text="🖨️ Imprimer Ticket", bg="#27ae60", fg="white",
-                  font=("Arial", 12, "bold"), height=2,
-                  command=self.imprimer).pack(fill="x", pady=5)
-        
-        tk.Button(btn_frame, text="🔄 Nouveau Ticket", bg="#2980b9", fg="white",
-                  font=("Arial", 12), height=2,
-                  command=self.reset).pack(fill="x", pady=5)
-        
-        # معلومات
-        self.lbl_info = tk.Label(frame, text=f"Ticket N°: {self.num_ticket}",
-                                 bg="#f0f0f0", font=("Arial", 10), fg="#555")
-        self.lbl_info.pack(pady=5)
-    
-    def charger_compteur(self):
-        if os.path.exists("compteur.txt"):
-            with open("compteur.txt", "r") as f:
-                return int(f.read().strip() or 1)
-        return 1
-    
-    def sauver_compteur(self):
-        with open("compteur.txt", "w") as f:
-            f.write(str(self.num_ticket))
-    
-    def calculer(self):
-        try:
-            a = int(self.spin_adultes.get() or 0)
-            e = int(self.spin_enfants.get() or 0)
-            total = a * PRIX_ADULTE + e * PRIX_ENFANT
-            self.lbl_total.config(text=f"TOTAL: {total} DT")
-        except ValueError:
-            pass
-    
-    def imprimer(self):
-        nom = self.entry_nom.get().strip()
-        try:
-            a = int(self.spin_adultes.get() or 0)
-            e = int(self.spin_enfants.get() or 0)
-        except ValueError:
-            messagebox.showwarning("خطأ", "أدخل أرقام صحيحة")
-            return
-        
-        if not nom:
-            messagebox.showwarning("خطأ", "أدخل اسم الحريف أو الوكالة")
-            return
-        if a + e == 0:
-            messagebox.showwarning("خطأ", "أدخل على الأقل زائر واحد")
-            return
-        
-        total = a * PRIX_ADULTE + e * PRIX_ENFANT
-        
-        if imprimer_ticket(self.num_ticket, nom, a, e, total):
-            # تسجيل في ملف CSV
-            with open("ventes.csv", "a", encoding="utf-8") as f:
-                f.write(f"{self.num_ticket},{datetime.now()},{nom},{a},{e},{total}\n")
+        @media print {
+            body { background: white; display: block; padding: 0; }
+            .input-form { display: none; } 
+            .ticket-wrapper { display: block; width: 58mm; margin: 0 auto; } 
             
-            messagebox.showinfo("✅", f"تمت الطباعة!\nTicket N° {self.num_ticket}")
-            self.num_ticket += 1
-            self.sauver_compteur()
-            self.lbl_info.config(text=f"Ticket N°: {self.num_ticket}")
-            self.reset()
+            .ticket { border: 1px dashed #000; padding: 10px; font-family: 'Courier New', Courier, monospace; color: #000; background: #fff; }
+            .ticket-header { text-align: center; margin-bottom: 10px; }
+            .ticket-header h3 { font-size: 16px; margin-bottom: 2px; text-transform: uppercase; }
+            .ticket-header p { font-size: 11px; margin: 1px 0; }
+            .ticket-divider { border-top: 1px dashed #000; margin: 8px 0; }
+            .ticket-row { display: flex; justify-content: space-between; font-size: 12px; margin: 4px 0; }
+            .ticket-table { width: 100%; border-collapse: collapse; margin: 10px 0; }
+            .ticket-table th, .ticket-table td { border: 1px solid #000; padding: 5px; font-size: 11px; text-align: center; }
+            .ticket-table th { background-color: #f0f0f0; }
+            .ticket-footer { text-align: center; margin-top: 15px; font-size: 11px; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="input-form">
+    <h2>MUSÉE STAR WARS</h2>
+    <p>Hôtel Sidi Idriss - Matmata</p>
     
-    def reset(self):
-        self.entry_nom.delete(0, tk.END)
-        self.spin_adultes.delete(0, tk.END)
-        self.spin_adultes.insert(0, "0")
-        self.spin_enfants.delete(0, tk.END)
-        self.spin_enfants.insert(0, "0")
-        self.lbl_total.config(text="TOTAL: 0 DT")
-        self.entry_nom.focus()
+    <a href="index.html" class="btn btn-back">⬅ Retour au menu</a>
+    
+    <div class="form-group">
+        <label>Nom Client / Agence</label>
+        <input type="text" id="nomClient" placeholder="Nom de l'agence">
+    </div>
 
+    <div class="row">
+        <div class="form-group">
+            <label>Nb Adultes</label>
+            <input type="number" id="nbAdultes" value="1" min="0" oninput="calculer()">
+        </div>
+        <div class="form-group">
+            <label>Nb Enfants</label>
+            <input type="number" id="nbEnfants" value="0" min="0" oninput="calculer()">
+        </div>
+    </div>
 
-if __name__ == "__main__":
-    root = tk.Tk()
-    app = AppMusee(root)
-    root.mainloop()
+    <div class="form-group">
+        <label>Prix Unitaire (DT)</label>
+        <input type="number" id="prixUnitaire" value="0" min="0" oninput="calculer()">
+    </div>
+
+    <div class="total-preview">
+        Total à payer : <span id="totalAffichage">0.000</span> DT
+    </div>
+
+    <button class="btn btn-reset" onclick="resetForm()">🔄 Nouveau Ticket</button>
+    <button class="btn btn-print" onclick="window.print()">🖨️ Imprimer le Ticket</button>
+</div>
+
+<div class="ticket-wrapper">
+    <div class="ticket">
+        <div class="ticket-header">
+            <h3>BILLET D'ENTRÉE</h3>
+            <p><b>Musée Star Wars</b></p>
+            <p>Hôtel Sidi Idriss</p>
+            <p>📞 75 240 005</p>
+            <p>✉️ sidi.idriss.hotel@gmail.com</p>
+        </div>
+        
+        <div class="ticket-divider"></div>
+        
+        <div class="ticket-row"><span>N° Billet :</span> <span id="ticketNum">TKT-001</span></div>
+        <div class="ticket-row"><span>Date :</span> <span id="ticketDate"></span></div>
+        <div class="ticket-row"><span>Client / Agence :</span> <span id="ticketClient">Nom...</span></div>
+        
+        <div class="ticket-divider"></div>
+        
+        <table class="ticket-table">
+            <thead>
+                <tr>
+                    <th>Visiteurs</th>
+                    <th>Prix (DT)</th>
+                    <th>Total (DT)</th>
+                </tr>
+            </thead>
+            <tbody id="ticketTableBody"></tbody>
+        </table>
+        
+        <div class="ticket-divider"></div>
+        
+        <div class="ticket-footer">
+            <p style="font-weight: bold;">Bienvenue !</p>
+            <p>Merci de votre visite.</p>
+        </div>
+    </div>
+</div>
+
+<script>
+    function calculer() {
+        const prix = parseFloat(document.getElementById('prixUnitaire').value) || 0;
+        const adultes = parseInt(document.getElementById('nbAdultes').value) || 0;
+        const enfants = parseInt(document.getElementById('nbEnfants').value) || 0;
+        const total = (adultes + enfants) * prix;
+
+        document.getElementById('totalAffichage').textContent = total.toFixed(3);
+        document.getElementById('ticketClient').textContent = document.getElementById('nomClient').value || "Nom...";
+        
+        const now = new Date();
+        document.getElementById('ticketDate').textContent = now.toLocaleDateString('fr-FR');
+
+        let tableHTML = `
+            <tr>
+                <td>${adultes + enfants}</td>
+                <td>${prix.toFixed(3)}</td>
+                <td>${total.toFixed(3)}</td>
+            </tr>`;
+        document.getElementById('ticketTableBody').innerHTML = tableHTML;
+    }
+
+    function resetForm() {
+        document.getElementById('nomClient').value = '';
+        document.getElementById('prixUnitaire').value = '0';
+        document.getElementById('nbAdultes').value = '1';
+        document.getElementById('nbEnfants').value = '0';
+        document.getElementById('ticketNum').textContent = `TKT-${Math.floor(100 + Math.random() * 900)}`;
+        calculer();
+    }
+    window.onload = resetForm;
+</script>
+
+</body>
+</html>
