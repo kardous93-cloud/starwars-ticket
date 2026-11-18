@@ -8,7 +8,7 @@
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
         body { background-color: #f4f4f4; display: flex; justify-content: center; align-items: flex-start; min-height: 100vh; padding: 20px; }
         
-        /* --- واجهة الإدخال (اللي تظهر في المتصفح) --- */
+        /* --- واجهة الإدخال --- */
         .input-form {
             background: white; width: 100%; max-width: 450px; border-radius: 12px;
             box-shadow: 0 4px 15px rgba(0,0,0,0.1); padding: 25px;
@@ -33,13 +33,13 @@
         .btn-reset { background: #e0e0e0; color: #333; margin-bottom: 10px; }
         .btn-reset:hover { background: #ccc; }
         
-        /* --- التيكي (مخفي في الشاشة، يظهر غير في الطباعة) --- */
+        /* --- إخفاء التيكي في الشاشة --- */
         .ticket-wrapper { display: none; }
         
-        /* --- إعدادات الطباعة الحرارية --- */
+        /* --- إعدادات الطباعة (تخرج كيما المتحف بالضبط) --- */
         @media print {
             body { background: white; display: block; padding: 0; }
-            .input-form { display: none; } /* نخفيو الفورم */
+            .input-form { display: none; } 
             .ticket-wrapper { display: block; width: 58mm; margin: 0 auto; } 
             
             .ticket {
@@ -87,7 +87,7 @@
     </div>
 
     <div class="form-group">
-        <label>Prix Unitaire / Adulte (DT)</label>
+        <label>Prix Unitaire (DT)</label>
         <input type="number" id="prixUnitaire" value="0" min="0" oninput="calculer()">
     </div>
 
@@ -103,8 +103,9 @@
 <div class="ticket-wrapper">
     <div class="ticket" id="ticketToPrint">
         <div class="ticket-header">
+            <!-- المعلومات كيما المتحف بالضبط -->
             <h3>BILLET D'ENTRÉE</h3>
-            <p>Restaurant Hôtel Sidi Idriss</p>
+            <p><b>Hôtel Sidi Idriss</b></p>
             <p>Matmata 6070</p>
             <p>📞 75 240 005</p>
             <p>✉️ sidi.idriss.hotel@gmail.com</p>
@@ -122,13 +123,12 @@
             <thead>
                 <tr>
                     <th>Désignation</th>
-                    <th>Qté</th>
                     <th>Prix (DT)</th>
                     <th>Total (DT)</th>
                 </tr>
             </thead>
             <tbody id="ticketTableBody">
-                <!-- يتعمر بالجافاسكريبت -->
+                <!-- يتعمر أوتوماتيك -->
             </tbody>
         </table>
         
@@ -148,27 +148,25 @@
         const adultes = parseInt(document.getElementById('nbAdultes').value) || 0;
         const enfants = parseInt(document.getElementById('nbEnfants').value) || 0;
 
-        // الأطفال يخلصو 50%
+        // الأطفال 50%
         const totalAdultes = adultes * prix;
         const totalEnfants = enfants * (prix * 0.5); 
         const total = totalAdultes + totalEnfants;
 
-        // تحديث الواجهة
         document.getElementById('totalAffichage').textContent = total.toFixed(3);
 
-        // تحديث التيكي
-        const nom = document.getElementById('nomClient').value || "Non spécifié";
+        const nom = document.getElementById('nomClient').value || "Nom...";
         document.getElementById('ticketClient').textContent = nom;
         
+        // التاريخ
         const now = new Date();
-        document.getElementById('ticketDate').textContent = now.toLocaleDateString('fr-FR') + ' ' + now.toLocaleTimeString('fr-FR', {hour: '2-digit', minute:'2-digit'});
+        document.getElementById('ticketDate').textContent = now.toLocaleDateString('fr-FR');
 
         let tableHTML = '';
         if (adultes > 0) {
             tableHTML += `
                 <tr>
                     <td>Adultes</td>
-                    <td>${adultes}</td>
                     <td>${prix.toFixed(3)}</td>
                     <td>${totalAdultes.toFixed(3)}</td>
                 </tr>`;
@@ -177,30 +175,33 @@
             tableHTML += `
                 <tr>
                     <td>Enfants (50%)</td>
-                    <td>${enfants}</td>
                     <td>${(prix * 0.5).toFixed(3)}</td>
                     <td>${totalEnfants.toFixed(3)}</td>
                 </tr>`;
         }
         
+        // باش يبان عدد الزوار كيما المتحف
+        tableHTML += `
+            <tr>
+                <td colspan="2">Total Visiteurs</td>
+                <td><b>${adultes + enfants}</b></td>
+            </tr>`;
+
         document.getElementById('ticketTableBody').innerHTML = tableHTML;
     }
 
-    // دالة تصفير الفورم
     function resetForm() {
         document.getElementById('nomClient').value = '';
         document.getElementById('prixUnitaire').value = '0';
         document.getElementById('nbAdultes').value = '1';
         document.getElementById('nbEnfants').value = '0';
         
-        // توليد رقم تيكي عشوائي
         const randomNum = Math.floor(100 + Math.random() * 900);
         document.getElementById('ticketNum').textContent = `TKT-${randomNum}`;
         
         calculer();
     }
 
-    // تشغيل الدالة عند فتح الصفحة
     window.onload = function() {
         resetForm();
     };
